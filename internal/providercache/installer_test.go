@@ -15,6 +15,7 @@ import (
 	svchost "github.com/hashicorp/terraform-svchost"
 	"github.com/hashicorp/terraform-svchost/disco"
 	"github.com/hashicorp/terraform/addrs"
+	"github.com/hashicorp/terraform/internal/depsfile"
 	"github.com/hashicorp/terraform/internal/getproviders"
 )
 
@@ -80,7 +81,7 @@ func TestEnsureProviderVersions_local_source(t *testing.T) {
 				wantSelected = getproviders.Selections{}
 			}
 
-			selected, err := installer.EnsureProviderVersions(ctx, reqs, InstallNewProvidersOnly)
+			selected, err := installer.EnsureProviderVersions(ctx, depsfile.NewLocks(), reqs, InstallNewProvidersOnly)
 
 			if diff := cmp.Diff(wantSelected, selected); diff != "" {
 				t.Errorf("wrong selected\n%s", diff)
@@ -158,7 +159,7 @@ func TestEnsureProviderVersions_protocol_errors(t *testing.T) {
 				test.provider: test.inputVersion,
 			}
 			ctx := context.TODO()
-			_, err := installer.EnsureProviderVersions(ctx, reqs, InstallNewProvidersOnly)
+			_, err := installer.EnsureProviderVersions(ctx, depsfile.NewLocks(), reqs, InstallNewProvidersOnly)
 
 			switch err := err.(type) {
 			case nil:

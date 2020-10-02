@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/hashicorp/terraform/addrs"
+	"github.com/hashicorp/terraform/internal/providercache"
 )
 
 // VersionCommand is a Command implementation prints the version.
@@ -88,21 +91,27 @@ func (c *VersionCommand) Run(args []string) int {
 	// Generally-speaking this is a best-effort thing that will give us a good
 	// result in the usual case where the user successfully ran "terraform init"
 	// and then hit a problem running _another_ command.
-	providerInstaller := c.providerInstaller()
-	providerSelections, err := providerInstaller.SelectedPackages()
+	//
+	// TODO: Update this to use the dependency lock file instead.
 	var pluginVersions []string
-	if err != nil {
-		// we'll just ignore it and show no plugins at all, then.
-		providerSelections = nil
-	}
-	for providerAddr, cached := range providerSelections {
-		version := cached.Version.String()
-		if version == "0.0.0" {
-			pluginVersions = append(pluginVersions, fmt.Sprintf("+ provider %s (unversioned)", providerAddr))
-		} else {
-			pluginVersions = append(pluginVersions, fmt.Sprintf("+ provider %s v%s", providerAddr, version))
+	var providerSelections map[addrs.Provider]*providercache.CachedProvider
+	/*
+		providerInstaller := c.providerInstaller()
+		providerSelections, err := providerInstaller.SelectedPackages()
+		if err != nil {
+			// we'll just ignore it and show no plugins at all, then.
+			providerSelections = nil
 		}
-	}
+		for providerAddr, cached := range providerSelections {
+			version := cached.Version.String()
+			if version == "0.0.0" {
+				pluginVersions = append(pluginVersions, fmt.Sprintf("+ provider %s (unversioned)", providerAddr))
+			} else {
+				pluginVersions = append(pluginVersions, fmt.Sprintf("+ provider %s v%s", providerAddr, version))
+			}
+		}
+	*/
+
 	// If we have a version check function, then let's check for
 	// the latest version as well.
 	if c.CheckFunc != nil {
